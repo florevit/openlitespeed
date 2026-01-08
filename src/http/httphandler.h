@@ -30,7 +30,9 @@ public:
 
     int getType() const          {   return m_iType;     }
     virtual const char *getName() const = 0;
-
+    // range is 0 - 1000 .
+    virtual int  getUtilRatio() const
+    {   return 0;       }
 };
 
 #endif

@@ -15,6 +15,7 @@ UnpackedHeaders::UnpackedHeaders()
     m_buf->append("\0\0\0\0", HEADER_BUF_PAD);
     m_lsxpack.alloc(32);
     m_lsxpack.setSize(UPK_PSDO_RESERVE);
+    memset(m_lsxpack.get(0), 0, sizeof(lsxpack_header) * UPK_PSDO_RESERVE);
     m_first_cookie_idx = UINT16_MAX;
 
 }
@@ -60,6 +61,7 @@ void UnpackedHeaders::reset()
     m_buf->resize(HEADER_BUF_PAD);
     m_lsxpack.clear();
     m_lsxpack.setSize(UPK_PSDO_RESERVE);
+    memset(m_lsxpack.get(0), 0, sizeof(lsxpack_header) * UPK_PSDO_RESERVE);
 }
 
 
@@ -763,12 +765,16 @@ int UnpackedHeaders::setMethod2(lsxpack_header *hdr)
     if (m_buf->size() != HEADER_BUF_PAD)
     {
         int diff = hdr->val_len - 6;
-        if (diff != 0)
+        if (diff > 0)
         {
+            char tmp_buf[hdr->val_len];
+            memmove(tmp_buf, m_buf->get_ptr(hdr->val_offset),
+                    hdr->val_len);
             m_buf->guarantee(m_buf->size() + hdr->val_len);
-            char *ptr = m_buf->get_ptr(HEADER_BUF_PAD + hdr->val_len + 1);
-            memmove(ptr, m_buf->get_ptr(HEADER_BUF_PAD + 7),
-                    m_buf->end() - ptr);
+            char *ptr = m_buf->get_ptr(HEADER_BUF_PAD + hdr->val_len);
+            memmove(ptr, m_buf->get_ptr(HEADER_BUF_PAD + 6),
+                    m_buf->size() - HEADER_BUF_PAD - 6);
+            memmove(m_buf->get_ptr(HEADER_BUF_PAD), tmp_buf, hdr->val_len);
             m_buf->used(diff);
             if (m_url_offset)
                 m_url_offset += diff;
@@ -776,10 +782,10 @@ int UnpackedHeaders::setMethod2(lsxpack_header *hdr)
             {
                 m_host_offset += diff;
                 m_lsxpack.get(3)->val_offset += diff;
-
             }
         }
-        memmove(m_buf->get_ptr(HEADER_BUF_PAD), m_buf->get_ptr(hdr->val_offset),
+        else
+            memmove(m_buf->get_ptr(HEADER_BUF_PAD), m_buf->get_ptr(hdr->val_offset),
                 hdr->val_len);
     }
     else
@@ -1374,6 +1380,8 @@ lsxpack_err_code UpkdHdrBuilder::process(lsxpack_header *hdr)
             return LSXPACK_OK;
         case UPK_HDR_METHOD:  //":method"
             //If second time have the :method, ERROR
+            if (hdr->val_len > 7 && memchr(val, ' ', hdr->val_len) != NULL)
+                return LSXPACK_ERR_BAD_REQ_HEADER;
             if (headers->setMethod2(hdr) == LS_FAIL)
                 return LSXPACK_ERR_DUPLICATE_PSDO_HDR;
             break;
@@ -1552,6 +1560,15 @@ lsxpack_header_t *UpkdHdrBuilder::prepareDecode(lsxpack_header_t *hdr,
     }
     assert(hdr->buf + hdr->name_offset + hdr->val_len <= headers->m_buf->buf_end());
     return hdr;
+}
+
+
+void UnpackedHeaders::markNameUpdated(lsxpack_header *hdr)
+{
+    hdr->flags = (enum lsxpack_flag)0;
+    hdr->app_index = HttpHeader::H_UNKNOWN;
+    hdr->hpack_index = LSHPACK_HDR_UNKNOWN;
+    hdr->qpack_index = 0;
 }
 
 

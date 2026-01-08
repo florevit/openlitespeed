@@ -131,21 +131,7 @@ class CValidation
 
 	protected function encryptPass($val)
 	{
-		$valid_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/.";
-		$limit = strlen($valid_chars) - 1;
-		$isMac = (strtoupper(PHP_OS) === 'DARWIN');
-
-		if (CRYPT_MD5 == 1 && !$isMac) {
-			$salt = '$1$';
-			for ($i = 0; $i < 8; $i++) {
-				$salt .= $valid_chars[rand(0, $limit)];
-			}
-			$salt .= '$';
-		} else {
-			$salt = $valid_chars[rand(0, $limit)];
-			$salt .= $valid_chars[rand(0, $limit)];
-		}
-		$pass = crypt($val, $salt);
+        $pass = password_hash($val, PASSWORD_BCRYPT);
 		return $pass;
 	}
 
@@ -161,11 +147,9 @@ class CValidation
 			$udb = $this->_disp->Get(DInfo::FLD_ConfData);
 
 			$oldusername = $this->_disp->GetLast(DInfo::FLD_REF);
-			$passwd = $udb->GetChildVal('*index$name:passwd', $oldusername);
+			$oldhash = $udb->GetChildVal('*index$name:passwd', $oldusername);
 
-			$encypt = crypt($oldpass, $passwd);
-
-			if ($encypt != $passwd) {
+			if (!password_verify($oldpass, $oldhash)) {
 				$d->SetChildErr('oldpass', 'Invalid old password!');
 				$isValid = -1;
 			}

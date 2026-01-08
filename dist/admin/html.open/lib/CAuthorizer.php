@@ -84,7 +84,7 @@ class CAuthorizer
     {
 		if ($_SESSION['valid'] !== true) {
 			return false;
-		} 
+		}
 		// otherwise enforce referrer exists
 		if (!isset($_SERVER['HTTP_REFERER'])) {
 			return false;
@@ -244,17 +244,12 @@ class CAuthorizer
 
             $lines = explode("\n", $all);
             foreach ($lines as $line) {
-                list($user, $pass) = explode(':', $line);
-                if ($user === $authUser) {
-                    if ($pass[0] != '$')
-                        $salt = substr($pass, 0, 2);
-                    else
-                        $salt = substr($pass, 0, 12);
-                    $encypt = crypt($authPass, $salt);
-                    if ($pass == $encypt) {
-                        $auth = true;
-                        break;
+                list($user, $hash) = explode(':', $line);
+                if ( $user == $authUser ) {
+                    if (password_verify($authPass, $hash)) {
+                        $auth = true ;
                     }
+                    break ;
                 }
             }
         }
