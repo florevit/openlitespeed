@@ -2006,7 +2006,7 @@ bool HttpSession::shouldAvoidRecaptchaEx()
         getClientInfo()->incAllowedBotHits();
         if (!getClientInfo()->isReachBotLimit())
         {
-            LS_DBG(getLogSession(), "[RECAPITCHA] /.well-known/ request, skip recaptcha.");
+            LS_DBG(getLogSession(), "[RECAPTCHA] /.well-known/ request, skip recaptcha.");
             return true;
         }
     }
@@ -2613,6 +2613,12 @@ int HttpSession::handlerProcess(const HttpHandler *pHandler)
     }
     if (m_request.getContext() && m_request.getContext()->isRailsContext())
         setFlag(HSF_REQ_WAIT_FULL_BODY);
+    if (pHandler->getUtilRatio() > 400)
+    {
+        setFlag(HSF_REQ_WAIT_FULL_BODY);
+        LS_DBG_L(getLogSession(), "More than 40%% handler connections has been used -- "
+                            "wait for full body before starting handler");
+    }
     if (testFlag(HSF_REQ_WAIT_FULL_BODY | HSF_REQ_BODY_DONE) ==
         HSF_REQ_WAIT_FULL_BODY)
     {

@@ -115,8 +115,12 @@ int archiveFile(const char *pFileName, const char *pSuffix,
     ret = ::rename(pFileName, achBuf);
     if (ret == -1)
         return ret;
-    if (compress)
+    if (compress) //if set to compress and size larger than 300 Bytes
     {
+        if (nio_stat(achBuf, &st) == -1 || st.st_size < 300) {
+            return 0;
+        }
+
         int pid = fork();
         if (pid)
             return (pid == -1) ? pid : 0;

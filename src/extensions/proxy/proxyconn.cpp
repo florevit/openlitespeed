@@ -40,7 +40,7 @@
 
 static char s_achForwardHttps[] = "X-Forwarded-Proto: https\r\n";
 static char s_achForwardHost[] = "X-Forwarded-Host: ";
-static char s_achChunkedEncoding[] = "Transfer-encoding: chunked\r\n";
+static char s_achChunkedEncoding[] = "Transfer-Encoding: chunked\r\n";
 
 ProxyConn::ProxyConn()
     : m_flag(0)
@@ -344,9 +344,9 @@ int ProxyConn::sendReqHeader()
         m_iTotalPending += sizeof(s_achForwardHttps) - 1;
     }
 
-    if (pReq->getContentLength() == LSI_BODY_SIZE_CHUNK)
+    if (pReq->getContentLength() < 0)
     {
-        LS_DBG_L(this, "Unfinished request body is chunk encoded, use chunked encoding ." );
+        LS_DBG_L(this, "Unfinished request body has unknown size, use chunked encoding." );
         if (!pReq->isHeaderSet(HttpHeader::H_TRANSFER_ENCODING))
         {
             LS_DBG_L(this, "Add request header 'Transfer-encoding: chunked'" );

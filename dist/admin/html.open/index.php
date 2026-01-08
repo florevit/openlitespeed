@@ -37,14 +37,16 @@ include("view/inc/nav.php");
 
 
 <!--
-<?php echo $footer_lic_info; ?>
+<?php
+echo $footer_lic_info;
+?>
 -->
 
 <!-- PAGE FOOTER -->
 <div class="page-footer">
 	<div class="row">
 		<div class="col-xs-12 col-sm-6">
-			<span class="txt-color-blueLight">LiteSpeed WebAdmin Console © 2014-2024 <?php DMsg::EchoUIStr('note_copyrightreserved'); ?></span>
+			<span class="txt-color-blueLight">OpenLiteSpeed WebAdmin Console © 2014-<?php echo date('Y') . ' '; DMsg::EchoUIStr('note_copyrightreserved'); ?></span>
 		</div>
 		<div class="col-xs-6 col-sm-6 text-right hidden-xs">
 			<i class="txt-color-blueLight hidden-mobile"> <i class="fa fa-clock-o"></i>

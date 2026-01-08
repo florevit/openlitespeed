@@ -368,7 +368,8 @@ int NtwkIOLink::setLink(HttpListener *pListener,  int fd, ConnInfo *pInfo)
     else
     {
         setNoSSL();
-        setupHandler(HIOS_PROTO_HTTP);
+        if (!(m_iFlag & NIOL_TRY_PROXY))
+            setupHandler(HIOS_PROTO_HTTP);
     }
 
     if (pInfo->m_pClientInfo->isFromLocalAddr(
@@ -434,7 +435,11 @@ int NtwkIOLink::handleEvents(short evt)
             int ret = tryProtocolProxy();
             LS_DBG_M(this, "tryProtocolProxy() return %d", ret);
             if (ret != 0)
+            {
                 m_iFlag &=~NIOL_TRY_PROXY;
+                if (!isSSL())
+                    setupHandler(HIOS_PROTO_HTTP);
+            }
             else
                 goto skip_read;
         }

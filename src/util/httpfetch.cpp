@@ -994,7 +994,14 @@ int HttpFetch::recvResp()
     }
     while (m_statusCode >= 0)
     {
-        ret = pollEvent(m_pollEvents, m_connTimeout);
+        if (m_nonblocking)
+        {
+            ret = pollEvent(m_pollEvents, 0);
+            if (ret == 0)
+                break;
+        }
+        else
+            ret = pollEvent(m_pollEvents, m_connTimeout);
         if (ret != 1)
         {
             endReq(ERROR_CONN_TIMEOUT);

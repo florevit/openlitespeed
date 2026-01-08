@@ -65,8 +65,8 @@ function customListen(port) {
     // The replacement for the listen call!
     var server = this;
     if (LsNode.listenDone) {
-        throw new Error("http.Server.listen() was called more than once " +
-                        "which is not allowed.");
+        console.error("http.Server.listen() was called more than once, ignore.");
+        return server;
     }
     LsNode.listenDone = true;
 

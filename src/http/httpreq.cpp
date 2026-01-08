@@ -1097,7 +1097,10 @@ int HttpReq::processUnpackedHeaderLines(UnpackedHeaders *headers)
                         return SC_400;
                     }
                     if (index == HttpHeader::H_HOST && begin->name_len == 4)
+                    {
                         *((char *)name + 3) = '2';
+                        headers->markNameUpdated((lsxpack_header *)begin);
+                    }
                     index = HttpHeader::H_HEADER_END;
                 }
             }

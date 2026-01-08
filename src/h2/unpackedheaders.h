@@ -148,6 +148,8 @@ public:
         return m_commonHeaderPos[hdr_idx];
     }
 
+    void markNameUpdated(lsxpack_header *hdr);
+
     void markValueUpdated(uint32_t hdr_idx)
     {
         assert(hdr_idx < HttpHeader::H_TE);

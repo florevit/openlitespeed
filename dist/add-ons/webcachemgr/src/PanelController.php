@@ -766,8 +766,6 @@ class PanelController
 
     /**
      *
-     * @deprecated release_ver_placeholder
-     *
      * @return bool|void  Function outputs ajax and exits without returning a
      *     value when $init is evaluated to be false.
      *

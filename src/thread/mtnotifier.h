@@ -20,6 +20,7 @@
 #define MTNOTIFIER_H
 
 #include <lsdef.h>
+#include <lsr/ls_atomic.h>
 #include <assert.h>
 #include <stdint.h>
 #include <pthread.h>
@@ -49,9 +50,9 @@ public:
 
     int wait()
     {
-        ++m_waiters;
+        ls_atomic_add(&m_waiters, 1);
         m_cond.wait(m_mutex.get());
-        return --m_waiters;
+        return ls_atomic_sub_fetch(&m_waiters, 1);
     }
 
     void unlock()
@@ -80,7 +81,8 @@ public:
         return waiters;
     }
 
-    int32_t getWaiters() const  {   return m_waiters;   }
+    int32_t getWaiters() const
+    {   return ls_atomic_value(&m_waiters);         }
 
     void notifyEx()
     {

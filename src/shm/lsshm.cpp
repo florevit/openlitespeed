@@ -286,6 +286,8 @@ LsShmStatus_t LsShm::checkDirSpace(const char *dirName)
 
 LsShmStatus_t LsShm::addBaseDir(const char *dirName)
 {
+    if (s_iNumBaseDir >= (int)(sizeof(s_pDirBase)/sizeof(s_pDirBase[0])))
+        return LSSHM_BADPARAM;
     if ((s_pDirBase[s_iNumBaseDir] = strdup(dirName)) == NULL)
         return LSSHM_SYSERROR;
     ++s_iNumBaseDir;
